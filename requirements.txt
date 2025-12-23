@@ -1,0 +1,8 @@
+streamlit
+google-genai
+fpdf2
+uharfbuzz
+gTTS
+python-dotenv
+pymongo
+watchdog

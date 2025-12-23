@@ -1,0 +1,6 @@
+.env
+venv/
+__pycache__/
+*.pdf
+*.mp3
+.DS_Store
