@@ -55,7 +55,7 @@ Uses **Gemini 1.5 Flash Vision** to analyze raw 7/12 Land Extracts (Satbara). It
 
 ```mermaid
 graph LR
-    A[Farmer (Voice + Image)] --> B(Streamlit UI);
+    A [Farmer (Voice + Image)] --> B(Streamlit UI);
     B --> C{Gemini 1.5 Flash};
     C -- Extracts Data --> D[Agent Logic];
     D -- Fetches Profile --> E[(MongoDB Mock DB)];
