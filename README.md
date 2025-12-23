@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/badge/Built%20with-Python%203.9+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
   </a>
   <a href="https://deepmind.google/technologies/gemini/">
-    <img src="https://img.shields.io/badge/Powered%20by-Google%20Gemini%201.5-4285F4?style=flat-square&logo=google&logoColor=white" alt="Gemini">
+    <img src="https://img.shields.io/badge/Powered%20by-Google%20Gemini%202.5-4285F4?style=flat-square&logo=google&logoColor=white" alt="Gemini">
   </a>
   <a href="https://cloud.google.com/run">
     <img src="https://img.shields.io/badge/Deployed%20on-Google%20Cloud%20Run-34A853?style=flat-square&logo=googlecloud&logoColor=white" alt="Cloud Run">
@@ -41,7 +41,7 @@ Uses **Gemini 1.5 Flash Vision** to analyze raw 7/12 Land Extracts (Satbara). It
 
 | Component | Technology | Role |
 | :--- | :--- | :--- |
-| **The Brain** | **Google Gemini 1.5 Flash** | Multimodal reasoning (Audio + Image -> JSON). |
+| **The Brain** | **Google Gemini 2.5 Flash** | Multimodal reasoning (Audio + Image -> JSON). |
 | **SDK** | **Google Gen AI SDK v2** | Interface for Gemini models. |
 | **Frontend** | **Streamlit** | Mobile-responsive UI for Camera & Mic input. |
 | **Deployment** | **Google Cloud Run** | Serverless hosting with HTTPS for mobile access. |
@@ -55,11 +55,11 @@ Uses **Gemini 1.5 Flash Vision** to analyze raw 7/12 Land Extracts (Satbara). It
 
 ```mermaid
 graph LR
-    A [Farmer (Voice + Image)] --> B(Streamlit UI);
-    B --> C{Gemini 1.5 Flash};
-    C -- Extracts Data --> D[Agent Logic];
-    D -- Fetches Profile --> E[(MongoDB Mock DB)];
-    D -- Checks 72hr Rule --> F[Eligibility Engine];
-    F --> G[PDF Generator];
-    G --> H[Final Claim PDF];
-    G --> I[Marathi Audio Confirmation];
+    A["Farmer (Voice + Image)"] --> B("Streamlit UI");
+    B --> C{"Gemini 2.5 Flash"};
+    C -- "Extracts Data" --> D["Agent Logic"];
+    D -- "Fetches Profile" --> E[("MongoDB Mock DB")];
+    D -- "Checks 72hr Rule" --> F["Eligibility Engine"];
+    F --> G["PDF Generator"];
+    G --> H["Final Claim PDF"];
+    G --> I["Marathi Audio Confirmation"];
