@@ -4,7 +4,7 @@ from pdf_generator import generate_filled_pdf
 from agent_engine import process_claim # Import the AI Brain
 import os
 import json
-
+from report_gen import generate_best_report  # <--- ADD THIS LINE
 # -----------------------------------------------------------------------------
 # 1. PAGE CONFIGURATION (Must be the first command)
 # -----------------------------------------------------------------------------
@@ -147,6 +147,8 @@ if st.button("🚀 File Claim (Arj Kara)"):
         with st.status("🔄 AI Agent Working...", expanded=True) as status:
             
             st.write("🎧 Sending Voice & Data to Gemini...")
+
+            final_data = {}
             
             # --- CALL THE AI ENGINE ---
             try:
@@ -159,6 +161,39 @@ if st.button("🚀 File Claim (Arj Kara)"):
                 )
                 
                 if ai_result.get("status") == "success":
+
+                    # 1. EXTRACT DATA FOR REPORT
+                    full_report_data = ai_result.get("full_report_data", {}) 
+                    app_id = final_data.get("application_id", "PENDING")
+
+                    # 2. SAVE TEMP IMAGE (Required for the Report Generator)
+                    temp_img_path = "temp_crop_evidence.jpg"
+                    with open(temp_img_path, "wb") as f:
+                        f.write(crop_image.getvalue())
+
+                    # 3. GENERATE THE NEW INTELLIGENCE REPORT
+                    report_pdf_path = generate_best_report(
+                        json_data=full_report_data, 
+                        image_path=temp_img_path, 
+                        output_filename=f"Report_{app_id}.pdf"
+                    )
+
+                    # ... (Your existing code generates the Application Form here) ...
+                    
+                    # 4. ADD THE DOWNLOAD BUTTON (Place this next to your existing button)
+                    if report_pdf_path and os.path.exists(report_pdf_path):
+                        with open(report_pdf_path, "rb") as f:
+                            st.download_button(
+                                label="📊 Download Intelligence Report",
+                                data=f,
+                                file_name=f"Report_{app_id}.pdf",
+                                mime="application/pdf",
+                                key="btn_report"
+                            )
+                    
+                    # Cleanup Temp Image
+                    if os.path.exists(temp_img_path):
+                        os.remove(temp_img_path)
                     
                     st.write("👁️ Analyzing Evidence & Checking 7/12...")
                     final_data = ai_result.get("data", {})
