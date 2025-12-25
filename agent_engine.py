@@ -143,26 +143,34 @@ def process_claim(audio_file, land_file, crop_file, mobile_number="9922001122"):
     - **Step D: Calculate Estimated Payout**: Sum Insured * 100% (Assuming Full Loss).
 
     --- JSON OUTPUT FORMAT ---
-    Return ONLY valid JSON. Values must be in MARATHI where applicable.
+    Return ONLY valid JSON. 
+    For the "form_fields" section, you MUST provide the standard value (in Marathi/Hindi as found in doc) AND an "_english" key with the transliteration.
     {{
         "status": "success",
         "voice_response": "Short empathetic response in the same language as input (Hindi/Marathi/English).",
         "verification": {{
-            "status": "Verified / Mismatch",
-            "reason": "Explain logic (e.g. 'Document is outdated (2022), so crop taken from voice claim.')"
-        }},
+           "status": "Verified / Mismatch",
+            "reason": "Full explanation logic.",
+            "visual_finding": "Short description of what is seen in photo (e.g. 'Standing water visible', 'Hailstones on ground', 'Wilted leaves')."
+        }}
         "claim_estimation": {{
             "estimated_payout": "Calculated in Step D (e.g. ₹30,000)",
+            "rate_applied": "e.g. ₹ 60,000 / Ha (Cotton)",  # <--- ADD THIS LINE
+            "deductible_rule": "e.g. 2% (Kharif Strategy)", # <--- ADD THIS LINE
             "logic": "Show the math (e.g. 0.5 Ha * ₹60,000)",
             "disclaimer": "This is an estimate based on district averages."
         }},
         "form_fields": {{
             "farmer_full_name": "Extract from Namuna 7",
+            "farmer_full_name_english": "Name Transliterated to English",
             "address_village": "Extract Village",
+            "address_village_english": "Village in English",
             "address_taluka": "Extract Taluka",
+            "address_taluka_english": "Taluka in English",
             "address_district": "Extract District",
             "survey_number": "Extract Survey/Gat No",
             "crop_name": "FINAL CROP DECISION (If Verified -> Doc Crop. If Outdated -> Voice Crop)",
+            "crop_name_english": "Crop Name in English",
             "sown_area_hectare": "Extract Area from Namuna 12",
             "scheme_name": "प्रधानमंत्री पीक विमा योजना (PMFBY)",
             "premium_amount": "Calculated in Step C (e.g. ₹1,500)",
@@ -207,8 +215,11 @@ def process_claim(audio_file, land_file, crop_file, mobile_number="9922001122"):
     real_app_id = save_claim_to_db(final_data, 0.95)
     final_data["application_id"] = real_app_id
 
+    # ... inside agent_engine.py, at the very bottom ...
+
     return {
         "status": "success", 
-        "data": final_data, 
+        "data": final_data,            # For App Display & Marathi Form
+        "full_report_data": ai_data,   # For English PDF Report
         "voice_response": ai_data.get("voice_response")
     }
