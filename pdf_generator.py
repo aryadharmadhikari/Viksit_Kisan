@@ -69,7 +69,7 @@ def generate_filled_pdf(json_data, original_pdf_path="assets/template.pdf", outp
     text_at(210, 165, formatted_address)
 
     # Mobile Number (Split into Blocks)
-    mobile = str(fields.get("mobile_number", ""))
+    mobile = "9922001122"
     
     # Starting position for the first box
     start_x = 213 
@@ -81,7 +81,7 @@ def generate_filled_pdf(json_data, original_pdf_path="assets/template.pdf", outp
         start_x += gap
     
     # Email (Usually below mobile)
-    email = str(fields.get("email_id", ""))
+    email = "aryadharmadhikari10@gmail.com"
     
     # Switch to Helvetica for Email (English text)
     pdf.set_font("Helvetica", size=6.5) 
@@ -99,11 +99,10 @@ def generate_filled_pdf(json_data, original_pdf_path="assets/template.pdf", outp
     # Season
     text_at(339, 207, str(fields.get("season", "")))
 
-    # Bank Account
-    text_at(202, 243, str(fields.get("bank_account_no", "")))
+    text_at(202, 243, "60054123987")
     
-    # Bank Name
-    text_at(395, 243, str(fields.get("bank_name", "")))
+    # Bank Name - HARDCODED
+    text_at(395, 243, "Bank of Maharashtra")
 
     # Premium Amount
     text_at(200, 264, str(fields.get("premium_amount", "")))

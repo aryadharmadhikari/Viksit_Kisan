@@ -327,10 +327,19 @@ else:
         st.info("🌱 **Crop Photo**")
         crop_image = st.file_uploader("Upload Photo", type=['jpg', 'png', 'jpeg'], key="crop")
 
+    # --- INITIALIZE SESSION STATE FOR CLAIM DATA ---
+    if "claim_results" not in st.session_state:
+        st.session_state.claim_results = None
+
     # --- ACTION & PROCESSING ---
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # BUTTON: Only triggers the processing
     if st.button("🚀 File Claim (Arj Kara)"):
+        # --- RESET STATE (CRITICAL FIX) ---
+        # Clear previous results immediately when button is clicked.
+        st.session_state.claim_results = None
+
         # VALIDATION
         if not audio_input:
             st.error("⚠️ Please record your voice first.")
@@ -361,10 +370,11 @@ else:
                         app_id = final_data.get("application_id", "PENDING")
                         voice_response = ai_result.get("voice_response", "Claim Processed.")
 
-                        # 2. SAVE TEMP IMAGE (Required for Report Generator)
-                        temp_img_path = f"temp_crop_{user_mobile}.jpg"
-                        with open(temp_img_path, "wb") as f:
-                            f.write(crop_image.getvalue())
+                        # 2. SAVE TEMP IMAGE
+                        import tempfile
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp_img:
+                            tmp_img.write(crop_image.getvalue())
+                            temp_img_path = tmp_img.name
 
                         # 3. GENERATE INTELLIGENCE REPORT
                         report_pdf_path = generate_best_report(
@@ -373,69 +383,87 @@ else:
                             output_filename=f"Report_{app_id}.pdf"
                         )
 
-                        # 4. DOWNLOAD BUTTON (Report)
-                        if report_pdf_path and os.path.exists(report_pdf_path):
-                            with open(report_pdf_path, "rb") as f:
-                                st.download_button(
-                                    label="📊 Download Intelligence Report",
-                                    data=f,
-                                    file_name=f"Report_{app_id}.pdf",
-                                    mime="application/pdf",
-                                    key="btn_report"
-                                )
-                        
-                        # Cleanup
+                        # Cleanup Temp Image
                         if os.path.exists(temp_img_path):
                             os.remove(temp_img_path)
                         
                         st.write("✍️ Generating Official Application...")
-                        
-                        # 5. GENERATE APPLICATION FORM PDF
+
+                        # 4. GENERATE APPLICATION FORM PDF
                         pdf_input_data = {"form_fields": final_data}
                         final_pdf_path = generate_filled_pdf(pdf_input_data, output_path=f"Claim_{app_id}.pdf")
                         
+                        # --- SAVE NEW RESULTS TO SESSION STATE ---
+                        st.session_state.claim_results = {
+                            "app_id": app_id,
+                            "payout": final_data.get("estimated_payout", "Calculating..."),
+                            "voice_response": voice_response,
+                            "report_path": report_pdf_path,
+                            "form_path": final_pdf_path,
+                            "success": True
+                        }
+                        
                         status.update(label="✅ Claim Processed Successfully!", state="complete", expanded=False)
                         st.balloons()
-                        
-                        # 6. SUCCESS CARD
-                        payout = final_data.get("estimated_payout", "Calculating...")
-                        
-                        st.markdown(f"""
-                        <div class="css-card">
-                            <h3 style="color: #2E7D32; margin-top: 0;">✅ Application Generated</h3>
-                            <p><b>Application ID:</b> {app_id}</p>
-                            <p><b>Estimated Payout:</b> <span style="color: #2E7D32; font-size: 1.2em; font-weight: bold;">{payout}</span></p>
-                            <p><b>Status:</b> Auto-Verified by AI Talathi</p>
-                            <hr>
-                            <p><i>"{voice_response}"</i></p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # 7. DOWNLOAD BUTTON (Application Form)
-                        if final_pdf_path and os.path.exists(final_pdf_path):
-                            with open(final_pdf_path, "rb") as f:
-                                st.download_button(
-                                    label="📄 Download Official Application PDF",
-                                    data=f,
-                                    file_name=f"Claim_{app_id}.pdf",
-                                    mime="application/pdf",
-                                    key="btn_app"
-                                )
-                        else:
-                            st.error("Error: Application PDF not generated.")
-                            
+
                     else:
                         status.update(label="❌ Verification Failed", state="error")
                         st.error(f"Claim Rejected: {ai_result.get('reason', 'Unknown Error')}")
+                        st.session_state.claim_results = None
                         
                 except Exception as e:
                     status.update(label="❌ System Error", state="error")
                     st.error(f"Critical Error: {e}")
+                    st.session_state.claim_results = None
+
+    # --- DISPLAY LOGIC (PERSISTENT) ---
+    # This block runs on every reload, keeping the data visible
+    if st.session_state.claim_results and st.session_state.claim_results["success"]:
+        
+        res = st.session_state.claim_results # Short variable name
+        
+        # 1. RESULT CARD
+        st.markdown(f"""
+        <div class="css-card">
+            <h3 style="color: #2E7D32; margin-top: 0;">✅ Application Generated</h3>
+            <p><b>Application ID:</b> {res['app_id']}</p>
+            <p><b>Estimated Payout:</b> <span style="color: #2E7D32; font-size: 1.2em; font-weight: bold;">{res['payout']}</span></p>
+            <p><b>Status:</b> Auto-Verified by AI Talathi</p>
+            <hr>
+            <p><i>"{res['voice_response']}"</i></p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 2. DOWNLOAD BUTTONS
+        col_d1, col_d2 = st.columns(2, gap="medium")
+        
+        with col_d1:
+            if res['report_path'] and os.path.exists(res['report_path']):
+                with open(res['report_path'], "rb") as f:
+                    st.download_button(
+                        label="📊 Download Report",
+                        data=f,
+                        file_name=f"Report_{res['app_id']}.pdf",
+                        mime="application/pdf",
+                        key="btn_report_persistent"
+                    )
+
+        with col_d2:
+            if res['form_path'] and os.path.exists(res['form_path']):
+                with open(res['form_path'], "rb") as f:
+                    st.download_button(
+                        label="📄 Download Application",
+                        data=f,
+                        file_name=f"Claim_{res['app_id']}.pdf",
+                        mime="application/pdf",
+                        key="btn_app_persistent"
+                    )
 
     # --- LOGOUT ---
     st.divider()
     if st.button("Logout", type="secondary"):
+        # Clear session state on logout
         st.session_state.logged_in = False
         st.session_state.user_info = {}
-        st.session_state.show_register = False
+        st.session_state.claim_results = None 
         st.rerun()
