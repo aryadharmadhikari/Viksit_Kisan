@@ -475,7 +475,7 @@ else:
                             with open(temp_img, "wb") as f: f.write(crop_image.getvalue())
                             
                             r_path = generate_best_report(full_report_data, temp_img, output_filename=f"Report_{app_id}.pdf")
-                            f_path = generate_filled_pdf(final_data, output_path=f"Claim_{app_id}.pdf")
+                            f_path = generate_filled_pdf({"form_fields": final_data}, output_path=f"Claim_{app_id}.pdf")
                             
                             if os.path.exists(temp_img): os.remove(temp_img)
                             
