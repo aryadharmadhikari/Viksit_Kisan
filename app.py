@@ -12,6 +12,13 @@ from pdf_generator import generate_filled_pdf
 from agent_engine import process_claim, db
 from report_gen import generate_best_report 
 
+# BRIDGE: Inject Streamlit Secrets into OS Environment for agent_engine.py
+if hasattr(st, "secrets"):
+    if "MONGO_URI" in st.secrets:
+        os.environ["MONGO_URI"] = st.secrets["MONGO_URI"]
+    if "GOOGLE_API_KEY" in st.secrets:
+        os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+
 # -----------------------------------------------------------------------------
 # 1. PAGE CONFIGURATION
 # -----------------------------------------------------------------------------
