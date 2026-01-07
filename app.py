@@ -211,10 +211,9 @@ if 'form_path' not in st.session_state: st.session_state.form_path = None
 def get_google_auth_url():
     try:
         client_id = st.secrets["google"]["client_id"]
-        client_secret = st.secrets["google"]["client_secret"]
         redirect_uri = st.secrets["google"]["redirect_uri"]
         
-        oauth = OAuth2Session(client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
         auth_url, state = oauth.create_authorization_url(
             'https://accounts.google.com/o/oauth2/v2/auth',
             access_type="offline", prompt="select_account", scope="openid email profile"
@@ -232,8 +231,8 @@ if "code" in st.query_params:
         client_secret = st.secrets["google"]["client_secret"]
         redirect_uri = st.secrets["google"]["redirect_uri"]
         
-        oauth = OAuth2Session(client_id, client_secret=client_secret, redirect_uri=redirect_uri)
-        token = oauth.fetch_token('https://oauth2.googleapis.com/token', code=code, client_secret=client_secret)
+        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+        token = oauth.fetch_token('https://oauth2.googleapis.com/token', code=code, client_secret=client_secret, include_client_id=True)
         user_info = oauth.get('https://www.googleapis.com/oauth2/v1/userinfo').json()
         email = user_info.get("email")
         
