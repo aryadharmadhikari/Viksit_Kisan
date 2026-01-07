@@ -54,13 +54,12 @@ def generate_filled_pdf(json_data, original_pdf_path="assets/template.pdf", outp
 
     # Extract fields ONCE here to use throughout the function
     fields = json_data.get("form_fields", {})
-
-    # --- 4. MAP YOUR FIELDS (YOUR MANUAL COORDINATES) ---
+# --- 4. MAP YOUR FIELDS (YOUR MANUAL COORDINATES) ---
     
     # Farmer Name
     text_at(250, 146, str(fields.get("farmer_full_name", "")))
     
-    # Address (Formatted: Mu. Po. Village, Ta. Taluka, Ji. District)
+    # Address
     village = fields.get('address_village', '')
     taluka = fields.get('address_taluka', '')
     district = fields.get('address_district', '')
@@ -68,20 +67,21 @@ def generate_filled_pdf(json_data, original_pdf_path="assets/template.pdf", outp
     formatted_address = f"मु. पो. {village}, ता. {taluka}, जि. {district}"
     text_at(210, 165, formatted_address)
 
-    # Mobile Number (Split into Blocks)
-    mobile = "9922001122"
+    # --- UPDATED: Mobile Number (Dynamic) ---
+    mobile = str(fields.get("mobile_number", "")) # Fetch from DB data
     
     # Starting position for the first box
     start_x = 213 
     y_pos = 181
     gap = 14
 
-    for digit in mobile:
+    # Loop through digits (handle if mobile is shorter than 10)
+    for digit in mobile[:10]: 
         text_at(start_x, y_pos, digit)
         start_x += gap
     
-    # Email (Usually below mobile)
-    email = "aryadharmadhikari10@gmail.com"
+    # --- UPDATED: Email (Dynamic) ---
+    email = str(fields.get("email", "")) # Fetch from DB data
     
     # Switch to Helvetica for Email (English text)
     pdf.set_font("Helvetica", size=6.5) 
@@ -99,10 +99,12 @@ def generate_filled_pdf(json_data, original_pdf_path="assets/template.pdf", outp
     # Season
     text_at(339, 207, str(fields.get("season", "")))
 
-    text_at(202, 243, "60054123987")
+    # --- UPDATED: Bank Details (Dynamic) ---
+    # Bank Account
+    text_at(202, 243, str(fields.get("bank_account_number", "")))
     
-    # Bank Name - HARDCODED
-    text_at(395, 243, "Bank of Maharashtra")
+    # Bank Name
+    text_at(395, 243, str(fields.get("bank_name", "")))
 
     # Premium Amount
     text_at(200, 264, str(fields.get("premium_amount", "")))

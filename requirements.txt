@@ -1,17 +1,17 @@
 # Core AI & Data
-google-genai==1.56.0        # Your priority version
-altair==6.0.0
-fpdf2==2.8.5
-pypdf==6.5.0
-pymongo==4.15.5
+google-genai              # The new Google GenAI SDK
+altair                    # Visualization (used by Streamlit)
+fpdf2                     # PDF Generation
+pypdf                     # PDF Merging/Reading
+pymongo                   # MongoDB Database connection
 
 # Web & Utilities
-streamlit==1.52.0
-watchdog==6.0.0
-python-dotenv==1.2.1
-requests==2.32.5
+streamlit                 # The Web App Framework
+watchdog                  # For Streamlit auto-reload
+python-dotenv             # To read .env files
+requests                  # HTTP Requests
 
 # Authentication
-Authlib==1.5.0              # Use this for OAuth flows instead of google-auth-oauthlib
-google-auth==2.45.0         # Required by google-genai 1.56.0
-uharfbuzz==0.53.2
+Authlib                   # For Google OAuth
+google-auth               # Google Auth Utilities
+uharfbuzz                 # CRITICAL: For Marathi Font support in FPDF2

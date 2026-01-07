@@ -103,13 +103,24 @@ def process_claim(audio_file, land_file, crop_file, mobile_number="9922001122"):
     
     **RULE**: If the image is ambiguous (e.g., just dirty water), **GIVE THE BENEFIT OF DOUBT** and proceed.
 
-    --- 2. DOCUMENT & DATA EXTRACTION ---
-    - **Locate Land Info (Namuna 7)**: Extract Farmer Name, Village, Taluka, District, Survey No.
-    - **Locate Crop Info (Namuna 12)**: 
-       - Scan the ENTIRE document for the table "गाव नमुना बारा" (Village Form 12).
-       - Look for the **LATEST AVAILABLE YEAR** entry (e.g., 2025-26, 2024-25).
-       - Extract the Crop Name, Season, and Area.
-       - If the land is "Pad" (Fallow) or empty, mark it as "Fallow".
+   --- 2. DOCUMENT & DATA EXTRACTION ---
+    - **Step A: Identify Target Farmer**:
+        - Listen to the **VOICE CLAIM** for the farmer's name. 
+        - Search the "Namuna 7" (Occupant/Bhogvatadar) column for this name.
+        - If found, extract that name. If NOT found, use the FIRST name listed in Namuna 7.
+        
+    - **Step B: Extract Location**: Village, Taluka, District, Survey/Gat No.
+    
+    - **Step C: Extract Exact Area (CRITICAL)**:
+        - Look for the area (Kshetra) specifically associated with the **Target Farmer's Name** or Account Number (Khate No).
+        - Look for columns like "Lagvad Yogya" (Cultivable) or "Ekun" (Total).
+        - **RULE**: Do NOT simply pick the largest number. Pick the number on the **same row/block** as the Farmer's Name.
+        
+    - **Step D: Locate Crop Info (Namuna 12)**: 
+        - Scan the table "गाव नमुना बारा" (Village Form 12).
+        - Look for the **LATEST AVAILABLE YEAR** (e.g., 2025-26, 2024-25).
+        - Extract the Crop Name & Season.
+        - **Area Check**: Use the area found in Namuna 12 (Pikache Kshetra). If it is blank or 0, fallback to the Area found in Step C.
 
     --- 3. VERIFICATION & LOGIC CHECKS ---
     - **Step A: Recency Check (The "Outdated" Rule)**: 

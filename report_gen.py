@@ -75,28 +75,34 @@ def generate_best_report(json_data, image_path, output_filename="Claim_Report_FI
     pdf.cell(90, 5, f"Audit Status:  Logged in Immutable Ledger (MongoDB)", ln=True)
     pdf.ln(8)
 
-    # --- SECTION 2: CLAIMANT VERIFICATION ---
+# --- SECTION 2: CLAIMANT VERIFICATION ---
     pdf.set_font(main_font, 'B', 11)
     pdf.set_fill_color(34, 139, 34) 
     pdf.set_text_color(255, 255, 255)
-    pdf.cell(0, 7, "  1. CLAIMANT VERIFICATION (From Flattened 7/12)", ln=True, fill=True)
+    pdf.cell(0, 7, "  1. CLAIMANT VERIFICATION", ln=True, fill=True)
     pdf.ln(3)
 
     form = json_data.get('form_fields', {})
     
-    # --- INTELLIGENT FIELD SELECTION ---
-    # Try to find the English key first. If missing, clean the standard key.
-    name_val = form.get('farmer_full_name_english') or clean_text(form.get('farmer_full_name'))
+    # 1. Get Names
+    owner_name = form.get('farmer_full_name_english') or clean_text(form.get('farmer_full_name'))
+    # This is the Login Name passed from app.py
+    filer_name = clean_text(json_data.get('filer_name', owner_name)) 
+    
+    # 2. Get Location
     village_val = form.get('address_village_english') or clean_text(form.get('address_village'))
     taluka_val = form.get('address_taluka_english') or clean_text(form.get('address_taluka'))
     crop_val = form.get('crop_name_english') or clean_text(form.get('crop_name'))
-    
-    is_verified = True 
-    badge_text = "IDENTITY VERIFIED" if is_verified else "MISMATCH"
-    badge_color = (0, 128, 0) if is_verified else (200, 0, 0)
+    # 3. Agent Logic
+    # If the login name is roughly the same as owner name -> Self Filed
+    if filer_name.lower().split()[0] in owner_name.lower():
+        badge_text = "SELF-FILED"
+        badge_color = (0, 128, 0) # Green
+    else:
+        badge_text = "AGENT-FILED"
+        badge_color = (255, 140, 0) # Orange
 
-    # --- IN report_gen.py (Inside generate_best_report) ---
-
+    # Row Helper (No changes needed here, just pasting for context)
     def print_row(label, value, extra_badge=None, fill=False):
         pdf.set_font(main_font, 'B', 10)
         pdf.set_text_color(50, 50, 50)
@@ -105,10 +111,7 @@ def generate_best_report(json_data, image_path, output_filename="Claim_Report_FI
         
         pdf.set_font(main_font, '', 10)
         pdf.set_text_color(0, 0, 0)
-        
-        # --- THE FIX: Clean the value before printing ---
         safe_value = clean_text(value) 
-        
         pdf.cell(80, 7, f" {safe_value}", border='B', fill=fill)
         
         if extra_badge:
@@ -118,11 +121,14 @@ def generate_best_report(json_data, image_path, output_filename="Claim_Report_FI
         else:
             pdf.cell(60, 7, "", border='B', ln=True, fill=fill)
 
-    print_row("Farmer Name", name_val, badge_text, fill=True)
-    print_row("Land ID (Gat No)", form.get('survey_number', 'N/A'), fill=False)
-    print_row("Village / Taluka", f"{village_val} / {taluka_val}", fill=True)
-    print_row("Total Area", f"{form.get('sown_area_hectare')} Ha", fill=False)
-    print_row("Crop Season", f"{form.get('season')} (Recency Checked)", fill=True)
+    # --- PRINT ROWS (Updated) ---
+    print_row("Filing Applicant", filer_name, badge_text, fill=True) # Shows Login Name
+    print_row("Land Owner (7/12)", owner_name, "VERIFIED", fill=False) # Shows 7/12 Name
+    
+    print_row("Land ID (Gat No)", form.get('survey_number', 'N/A'), fill=True)
+    print_row("Village / Taluka", f"{village_val} / {taluka_val}", fill=False)
+    print_row("Total Area", f"{form.get('sown_area_hectare')} Ha", fill=True)
+    
     pdf.ln(6)
 
     # --- SECTION 3: AI REASONING ---
@@ -220,17 +226,20 @@ def generate_best_report(json_data, image_path, output_filename="Claim_Report_FI
     pdf.cell(0, 6, "Footer Note: Calculation based on DLC rates for Yavatmal District, 2025.", ln=True)
     pdf.ln(5)
 
-    # --- SECTION 5: NEXT STEPS ---
-    if pdf.get_y() > 220:
+# --- SECTION 5: ACTIONABLE NEXT STEPS (OFFICIAL FORMAT) ---
+    # 1. Smart Page Break: Check if we are too close to the bottom
+    if pdf.get_y() > 210:
         pdf.add_page()
         pdf.add_watermark()
 
+    # 2. Header
     pdf.set_font(main_font, 'B', 11)
     pdf.set_fill_color(34, 139, 34)
     pdf.set_text_color(255, 255, 255)
     pdf.cell(0, 7, "  4. ACTIONABLE NEXT STEPS", ln=True, fill=True)
     pdf.ln(4)
 
+    # 3. Steps List
     pdf.set_text_color(0, 0, 0)
     pdf.set_font(main_font, '', 10)
     steps = [
@@ -241,16 +250,33 @@ def generate_best_report(json_data, image_path, output_filename="Claim_Report_FI
     for step in steps:
         pdf.cell(0, 6, step, ln=True)
     
-    pdf.ln(10)
-    if pdf.get_y() > 250:
-        pdf.add_page()
-        pdf.add_watermark()
-        
+    # 4. Add vertical space before signature block
+    pdf.ln(15)
+    
+    # --- OFFICIAL SIGNATURE BLOCK ---
+    # Capture the starting Y position so Left and Right sides align
+    sig_start_y = pdf.get_y()
+    
+    # LEFT SIDE: Date and Place
+    pdf.set_font(main_font, '', 10)
+    
+    # Date Row
+    pdf.set_xy(20, sig_start_y + 5)
+    pdf.cell(50, 5, f"Date:   {datetime.now().strftime('%d/%m/%Y')}", ln=True)
+    
+    # Place Row
+    pdf.set_xy(20, sig_start_y + 15)
+    pdf.cell(50, 5, "Place:  _________________", ln=True)
+
+    # RIGHT SIDE: Signature Box
     pdf.set_draw_color(0, 0, 0)
-    pdf.rect(130, pdf.get_y(), 60, 25) 
-    pdf.set_xy(135, pdf.get_y() + 20)
-    pdf.set_font(main_font, '', 9)
-    pdf.cell(0, 5, "Farmer Signature / Angtha")
+    # Draw Rect: x=130, y=sig_start_y, w=60, h=30
+    pdf.rect(130, sig_start_y, 60, 30) 
+    
+    # Text inside box (Centered at bottom)
+    pdf.set_xy(130, sig_start_y + 22)
+    pdf.set_font(main_font, 'B', 8)
+    pdf.cell(60, 5, "Farmer Signature / Angtha", align='C')
 
     try:
         pdf.output(output_filename)

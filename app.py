@@ -23,28 +23,108 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 2. CUSTOM CSS
+# 2. CUSTOM CSS (Refined for Perfect Centering)
 # -----------------------------------------------------------------------------
 st.markdown("""
     <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stApp { background-color: #F8F9FA; color: #333333; }
-    .css-card {
-        background-color: white; padding: 20px; border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; border: 1px solid #E0E0E0;
+    /* Global Background */
+    .stApp {
+        background-color: #F8F9FA;
+        background-image: radial-gradient(#E8F5E9 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+    #MainMenu, footer, header {visibility: hidden;}
+
+    /* LOGIN CARD CONTAINER */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: white;
+        border-radius: 24px; /* Slightly softer corners */
+        box-shadow: 0 12px 40px rgba(0,0,0,0.08); /* Softer shadow */
+        border: 1px solid #E0E0E0;
+        margin: auto;
+        padding: 3rem 2rem; /* Adjusted padding to give text room */
+        max-width: 420px; /* Increased slightly to prevent word wrap */
+        text-align: center;
+    }
+
+    /* TYPOGRAPHY */
+    .login-title {
+        font-family: 'Segoe UI', Roboto, sans-serif;
+        color: #1B5E20;
+        font-weight: 800;
+        font-size: 2rem; /* Reduced slightly to fit one line */
+        margin: 15px 0 5px 0; /* Added top margin for icon separation */
+        text-align: center;
+        line-height: 1.2;
+        white-space: nowrap; /* Forces text to stay on one line */
+    }
+    .login-subtitle {
+        font-family: 'Segoe UI', Roboto, sans-serif;
+        color: #757575;
+        font-size: 1.1rem;
+        text-align: center;
+        margin-top: 0px;
+        margin-bottom: 30px;
+        font-weight: 400;
+    }
+
+    /* BUTTON STYLING */
+    div.stButton {
+        display: flex;
+        justify-content: center;
+        width: 100%; 
     }
     div.stButton > button {
-        width: 100%; height: 55px; background-color: #2E7D32; color: white !important;
-        font-size: 18px; font-weight: 600; border-radius: 10px; border: none;
+        width: 100% !important;
+        height: 52px;
+        background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+        color: white !important;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+        transition: all 0.3s ease;
     }
-    div.stButton > button:hover { background-color: #1B5E20; }
-    .live-dot {
-        height: 12px; width: 12px; background-color: #00C851; border-radius: 50%;
-        display: inline-block; animation: pulse 2s infinite; margin-right: 8px;
+    div.stButton > button:hover {
+        transform: translateY(-2px);
+        /* Lighter, brighter green gradient on hover */
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); 
+        /* A subtle green glow border */
+        box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4); 
+        border: 1px solid #86EFAC; /* Soft green border */
     }
-    [data-testid='stFileUploader'] { background-color: white; padding: 10px; border-radius: 10px; border: 1px dashed #2E7D32; }
+    div.stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(22, 163, 74, 0.35);
+    }
+    div.stButton > button:active {
+        transform: translateY(0px);
+    }
+
+    /* BADGE */
+    .govt-badge {
+        display: inline-block;
+        margin-top: 25px;
+        padding: 8px 16px;
+        background-color: #F0FDF4;
+        color: #166534;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid #DCFCE7;
+        letter-spacing: 0.5px;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    /* Centering Helper */
+    div[data-testid="column"] {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -126,14 +206,45 @@ if hasattr(st, "user"):
 
 # SCENARIO 1: NOT LOGGED IN
 if not google_user or not google_user.get("email"):
-    col1, col2, col3 = st.columns([1, 6, 1])
-    with col2:
-        st.image("https://cdn-icons-png.flaticon.com/512/9623/9623631.png", width=80)
-        st.markdown("<h2 style='text-align: center;'>Viksit Kisan</h2>", unsafe_allow_html=True)
-        st.info("Please log in to access the portal.")
-        if st.button("Login with Google"):
-            if hasattr(st, "login"): st.login(provider="google")
-            else: st.error("Login service unavailable.")
+    
+    # Vertical Spacers
+    st.write("")
+    st.write("")
+    st.write("")
+
+    # Columns: [1, 1, 1] centers the card perfectly
+    left, center, right = st.columns([1, 1.2, 1]) 
+    
+    with center:
+        # THE CARD CONTAINER
+        with st.container(border=True):
+            
+            # 1. Logo (Restored the Green Leaf Sprout)
+            st.markdown("""
+                <div style="text-align: center;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2917/2917995.png" width="70">
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # 2. Text
+            st.markdown("""
+                <h1 class="login-title">Viksit Kisan</h1>
+                <p class="login-subtitle">Digital Crop Insurance Portal</p>
+            """, unsafe_allow_html=True)
+            
+            # 3. Button - use_container_width=True ensures full width
+            if st.button("Continue with Google", use_container_width=True):
+                if hasattr(st, "login"): 
+                    st.login(provider="google")
+                else: 
+                    st.error("Login unavailable")
+            
+            # 4. Badge
+            st.markdown("""
+                <div class="govt-badge">
+                    🏛️ Initiative for Maharashtra Farmers
+                </div>
+            """, unsafe_allow_html=True)
 
 # SCENARIO 2: LOGGED IN
 else:
@@ -167,7 +278,7 @@ else:
                 if st.form_submit_button("Save & Continue"):
                     if fname and mob:
                         new_user = {
-                            "farmer_full_name": fname,
+                            "Applicant_full_name": fname,
                             "address_village": village,
                             "address_taluka": taluka,
                             "address_district": district,
@@ -192,20 +303,55 @@ else:
         # Header
         col1, col2 = st.columns([1, 3])
         with col1:
-            st.image("https://cdn-icons-png.flaticon.com/512/9623/9623631.png", width=60)
+            st.image("https://cdn-icons-png.flaticon.com/512/2917/2917995.png", width=60)
         with col2:
             st.markdown(f"""
                 <div style='text-align: right; padding-top: 10px; color: #555;'>
                     <span class='live-dot'></span>
                     <small><b>GOVT SERVER: CONNECTED</b></small><br>
-                    <small>User: {st.session_state.mongo_user.get('farmer_full_name')}</small>
+                    <small>User: {st.session_state.mongo_user.get('Applicant_full_name')}</small>
                 </div>
             """, unsafe_allow_html=True)
         st.divider()
 
-        # Hero
-        st.markdown(f"### 👋 Namaskar, {st.session_state.mongo_user.get('farmer_full_name', '').split()[0]}")
+       # --- HERO SECTION (Fixed Name Logic) ---
+        full_name = st.session_state.mongo_user.get('Applicant_full_name', '')
+        
+        # Logic: 
+        # 1. If name exists ("Kailas Tajane"), take first word ("Kailas")
+        # 2. If name is missing/empty, fallback to "Shetkari" (Farmer)
+        if full_name and len(str(full_name).strip()) > 0:
+            first_name = str(full_name).strip().split()[0]
+        else:
+            first_name = "Shetkari" # Fallback if name is missing
+
+        st.markdown(f"### 👋 Namaskar, {first_name} Bhau")
         st.caption("Press the microphone and speak in Marathi")
+        # Voice Instructions Box
+       # Voice Instructions Box (Updated for Clarity)
+        st.markdown("""
+        <div style="background-color: #E8F5E9; padding: 15px; border-radius: 10px; border-left: 5px solid #2E7D32; margin-bottom: 15px;">
+            <p style="margin: 0; font-weight: bold; color: #1B5E20; font-size: 16px;">
+                🎙️ रेकॉर्डिंग करताना हे सांगा (Speak the following):
+            </p>
+            <ul style="margin: 8px 0 0 20px; color: #333; font-size: 15px; line-height: 1.6;">
+                <li>
+                    <b>सातबाऱ्यावरील शेतकऱ्याचे नाव</b> <br>
+                    <span style="color: #666; font-size: 13px;">(Farmer's Name as per 7/12 Document)</span>
+                </li>
+                <li>
+                    <b>नुकसान झालेल्या पिकाचे नाव</b> (उदा. कापूस, सोयाबीन) <br>
+                    <span style="color: #666; font-size: 13px;">(Damaged Crop Name e.g. Cotton, Soybean)</span>
+                </li>
+                <li>
+                    <b>नुकसानीचे कारण</b> (उदा. अतिवृष्टी, गारपीट, कीड) <br>
+                    <span style="color: #666; font-size: 13px;">(Cause of Loss e.g. Heavy Rain, Hailstorm, Pest)</span>
+                </li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Audio Input
         audio_input = st.audio_input("Record Voice Explanation")
 
         # Evidence
@@ -234,6 +380,19 @@ else:
                         if ai_result.get("status") == "success":
                             full_report_data = ai_result.get("full_report_data", {}) 
                             final_data = ai_result.get("data", {})
+
+                        # --- ADD THIS BLOCK: INJECT DB USER DETAILS ---
+                            # This ensures the logged-in user's details override AI guesses
+                            db_user = st.session_state.mongo_user
+                    
+                            final_data["mobile_number"] = db_user.get("mobile_number")
+                            final_data["email"] = db_user.get("email")
+                            final_data["bank_account_number"] = db_user.get("bank_account_number")
+                            final_data["bank_name"] = db_user.get("bank_name")
+                            # ---------------------------------------------
+
+                            # For Report (report_gen) - Passing the Login Name
+                            full_report_data["filer_name"] = db_user.get("Applicant_full_name", "")
                             
                             # --- FIX: DATA SYNC START ---
                             # 1. Force Payout from Report into Final Data
@@ -289,28 +448,45 @@ else:
                 status_txt = db_claim.get("status", "Submitted")
                 
                 st.markdown(f"""
-                <div class="css-card">
-                    <h3 style="color: #2E7D32; margin-top: 0;">✅ Application Generated</h3>
-                    <p><b>Application ID:</b> {db_claim.get('application_id')}</p>
-                    <p><b>Estimated Payout:</b> <span style="color: #2E7D32; font-size: 1.2em; font-weight: bold;">{payout}</span></p>
-                    <p><b>Status:</b> {status_txt} (AI Verified)</p>
-                    <hr>
-                    <p><i>"{voice_msg}"</i></p>
+                <div class="css-card" style="border-top: 5px solid #2E7D32; text-align: center;">
+                    <h3 style="color: #2E7D32; margin: 0 0 10px 0;">✅ Application Generated</h3>
+                    <p style="color: #666; font-size: 13px; margin: 0;">Application ID: <b>{db_claim.get('application_id')}</b></p>
+                <div style="background-color: #E8F5E9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <span style="color: #1B5E20; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Estimated Payout</span><br>
+                    <span style="color: #2E7D32; font-size: 24px; font-weight: 800;">{payout}</span>
+                </div>
+                    <p style="font-style: italic; color: #555; font-size: 14px; line-height: 1.5;">"{voice_msg}"</p>
                 </div>
                 """, unsafe_allow_html=True)
-
-                c1, c2 = st.columns(2)
-                with c1:
+                
+                # --- REPLACED DOWNLOAD SECTION ---
+                st.markdown("### 📥 Download Documents")
+                dl_col1, dl_col2 = st.columns(2, gap="medium")
+                
+                with dl_col1:
                     r_path = st.session_state.report_path
                     if r_path and os.path.exists(r_path):
                         with open(r_path, "rb") as f:
-                            st.download_button("📊 Download Report", f, file_name=os.path.basename(r_path))
-                with c2:
+                            st.download_button(
+                                label="📊 Download Intelligence Report",
+                                data=f,
+                                file_name=os.path.basename(r_path),
+                                mime="application/pdf",
+                                use_container_width=True
+                            )
+                
+                with dl_col2:
                     f_path = st.session_state.form_path
                     if f_path and os.path.exists(f_path):
                         with open(f_path, "rb") as f:
-                            st.download_button("📄 Download Form", f, file_name=os.path.basename(f_path))
-
+                            st.download_button(
+                                label="📄 Download Official Form",
+                                data=f,
+                                file_name=os.path.basename(f_path),
+                                mime="application/pdf",
+                                use_container_width=True
+                            )
+                # ---------------------------------
         st.markdown("<br><br>", unsafe_allow_html=True)
         if st.button("Logout", type="secondary"):
             if hasattr(st, "logout"): st.logout()
