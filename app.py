@@ -428,6 +428,15 @@ else:
                             full_report_data = ai_result.get("full_report_data", {}) 
                             final_data = ai_result.get("data", {})
 
+                            # --- FIX: INJECT LOGIC TRACE FOR REPORT ---
+                            # This ensures the "Intelligence Report" has the AI's reasoning text
+                            if "reasoning" not in full_report_data:
+                                full_report_data["reasoning"] = ai_result.get("reasoning", "AI verification complete based on provided evidence.")
+                            
+                            # Also map it to 'logic_trace' just in case the report generator looks for that key
+                            full_report_data["logic_trace"] = full_report_data["reasoning"]
+                            # ------------------------------------------
+
                         # --- ADD THIS BLOCK: INJECT DB USER DETAILS ---
                             # This ensures the logged-in user's details override AI guesses
                             db_user = st.session_state.mongo_user
@@ -466,7 +475,7 @@ else:
                             with open(temp_img, "wb") as f: f.write(crop_image.getvalue())
                             
                             r_path = generate_best_report(full_report_data, temp_img, output_filename=f"Report_{app_id}.pdf")
-                            f_path = generate_filled_pdf({"form_fields": final_data}, output_path=f"Claim_{app_id}.pdf")
+                            f_path = generate_filled_pdf(final_data, output_path=f"Claim_{app_id}.pdf")
                             
                             if os.path.exists(temp_img): os.remove(temp_img)
                             
