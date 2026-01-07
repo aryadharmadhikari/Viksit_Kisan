@@ -7,17 +7,17 @@ from datetime import datetime
 import pymongo
 from authlib.integrations.requests_client import OAuth2Session
 
-# --- Custom Modules ---
-from pdf_generator import generate_filled_pdf
-from agent_engine import process_claim, db
-from report_gen import generate_best_report 
-
 # BRIDGE: Inject Streamlit Secrets into OS Environment for agent_engine.py
 if hasattr(st, "secrets"):
     if "MONGO_URI" in st.secrets:
         os.environ["MONGO_URI"] = st.secrets["MONGO_URI"]
     if "GOOGLE_API_KEY" in st.secrets:
         os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+
+# --- Custom Modules ---
+from pdf_generator import generate_filled_pdf
+from agent_engine import process_claim, db
+from report_gen import generate_best_report 
 
 # -----------------------------------------------------------------------------
 # 1. PAGE CONFIGURATION
@@ -207,12 +207,53 @@ if 'current_app_id' not in st.session_state: st.session_state.current_app_id = N
 if 'report_path' not in st.session_state: st.session_state.report_path = None
 if 'form_path' not in st.session_state: st.session_state.form_path = None
 
-google_user = None
-if hasattr(st, "user"):
-    google_user = st.user
+# A. Helper to generate Login URL
+def get_google_auth_url():
+    try:
+        client_id = st.secrets["google"]["client_id"]
+        client_secret = st.secrets["google"]["client_secret"]
+        redirect_uri = st.secrets["google"]["redirect_uri"]
+        
+        oauth = OAuth2Session(client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+        auth_url, state = oauth.create_authorization_url(
+            'https://accounts.google.com/o/oauth2/v2/auth',
+            access_type="offline", prompt="select_account", scope="openid email profile"
+        )
+        return auth_url
+    except Exception as e:
+        st.error(f"Secrets Error: {e}")
+        return None
+
+# B. Callback Handler (Captures the 'code' from URL) - THIS WAS MISSING
+if "code" in st.query_params:
+    try:
+        code = st.query_params["code"]
+        client_id = st.secrets["google"]["client_id"]
+        client_secret = st.secrets["google"]["client_secret"]
+        redirect_uri = st.secrets["google"]["redirect_uri"]
+        
+        oauth = OAuth2Session(client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+        token = oauth.fetch_token('https://oauth2.googleapis.com/token', code=code, client_secret=client_secret)
+        user_info = oauth.get('https://www.googleapis.com/oauth2/v1/userinfo').json()
+        email = user_info.get("email")
+        
+        if email:
+            db_user = check_user_db(email, type="email")
+            if db_user:
+                st.session_state.mongo_user = db_user
+            else:
+                st.session_state.temp_reg_email = email
+                st.session_state.show_register = True
+            
+            st.query_params.clear()
+            st.rerun()
+            
+    except Exception as e:
+        st.error(f"Auth Failed: {e}")
+        st.query_params.clear()
 
 # SCENARIO 1: NOT LOGGED IN
-if not google_user or not google_user.get("email"):
+if not st.session_state.mongo_user and not st.session_state.get('show_register'):
     
     # Vertical Spacers
     st.write("")
@@ -240,11 +281,11 @@ if not google_user or not google_user.get("email"):
             """, unsafe_allow_html=True)
             
             # 3. Button - use_container_width=True ensures full width
-            if st.button("Continue with Google", use_container_width=True):
-                if hasattr(st, "login"): 
-                    st.login(provider="google")
-                else: 
-                    st.error("Login unavailable")
+            auth_url = get_google_auth_url()
+            if auth_url:
+                st.link_button("Continue with Google", auth_url, use_container_width=True)
+            else:
+                st.error("Google Secrets Config Missing (Check secrets.toml)")
             
             # 4. Badge
             st.markdown("""
@@ -255,7 +296,7 @@ if not google_user or not google_user.get("email"):
 
 # SCENARIO 2: LOGGED IN
 else:
-    user_email = google_user.get("email")
+    user_email = st.session_state.mongo_user.get("email") if st.session_state.mongo_user else st.session_state.get("temp_reg_email")
     if st.session_state.mongo_user is None:
         db_user = check_user_db(user_email, type="email")
         if db_user:
