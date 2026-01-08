@@ -5,6 +5,7 @@ import re
 import json
 from datetime import datetime
 import pymongo
+import pytz
 from authlib.integrations.requests_client import OAuth2Session
 
 # BRIDGE: Inject Streamlit Secrets into OS Environment for agent_engine.py
@@ -200,10 +201,12 @@ def log_claim_to_db(final_data, ai_response, mobile, confidence=0.99):
     # Extract Voice Response Safely
     voice_msg = ai_response.get("voice_response") or final_data.get("voice_response") or "Claim processed successfully."
     
+    IST = pytz.timezone('Asia/Kolkata')
+
     claim_document = {
         "application_id": app_id,
         "farmer_mobile": mobile,
-        "timestamp": datetime.now(),
+        "timestamp": datetime.now(IST),
         "status": "Approved" if ai_response.get("status") == "success" else "Rejected",
         "ai_confidence_score": confidence,
         "voice_response": voice_msg,

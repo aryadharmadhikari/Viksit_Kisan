@@ -3,6 +3,7 @@ from pypdf import PdfReader, PdfWriter
 import os
 from pytz import timezone
 from datetime import datetime
+import pytz
 
 def generate_filled_pdf(json_data, original_pdf_path="assets/template.pdf", output_path="test_output.pdf"):
     
