@@ -46,14 +46,14 @@ st.markdown("""
     /* LOGIN CARD CONTAINER */
     [data-testid="stVerticalBlockBorderWrapper"] {
         background-color: white;
-        border-radius: 24px;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+        border-radius: 24px; 
+        box-shadow: 0 12px 40px rgba(0,0,0,0.08); 
         border: 1px solid #E0E0E0;
         margin: auto;
-        /* FIX: Increased bottom padding to 4rem so the badge doesn't overlap the border */
-        padding: 3rem 2rem 4rem 2rem; 
-        max-width: 420px;
+        padding: 3rem 2rem 4rem 2rem;
+        max-width: 420px; 
         text-align: center;
+        width: 100%;
     }
 
     /* TYPOGRAPHY */
@@ -120,7 +120,7 @@ st.markdown("""
 
     /* BADGE */
     .govt-badge {
-        display: inline-block;
+        display: inline-flex;
         margin-top: 25px;
         padding: 8px 16px;
         background-color: #F0FDF4;
@@ -133,6 +133,7 @@ st.markdown("""
         align-items: center;
         justify-content: center;
         text-align: center;
+        gap: 6px;
     }
     
     /* Centering Helper */
@@ -152,6 +153,7 @@ st.markdown("""
         
         .govt-badge {
             /* Make text slightly smaller on mobile to look cleaner */
+            display: inline-flex;
             font-size: 11px !important; 
             padding: 8px 12px !important;
             margin-top: 20px !important;
@@ -374,19 +376,19 @@ else:
     # -------------------------------------------------------------------------
     elif st.session_state.mongo_user:
         
-        # Header
-        col1, col2 = st.columns([1, 3])
-        with col1:
-            st.image("https://cdn-icons-png.flaticon.com/512/2917/2917995.png", width=60)
-        with col2:
-            st.markdown(f"""
-                <div style='text-align: right; padding-top: 10px; color: #555;'>
-                    <span class='live-dot'></span>
-                    <small><b>GOVT SERVER: CONNECTED</b></small><br>
-                    <small>User: {st.session_state.mongo_user.get('Applicant_full_name')}</small>
+        st.markdown(f"""
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <div style="flex: 0 0 auto;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2917/2917995.png" width="50">
                 </div>
-            """, unsafe_allow_html=True)
-        st.divider()
+                <div style="flex: 1; text-align: right; color: #555;">
+                    <span class='live-dot' style="height: 8px; width: 8px; background-color: #22c55e; border-radius: 50%; display: inline-block; margin-right: 5px;"></span>
+                    <small><b>GOVT SERVER: CONNECTED</b></small><br>
+                    <small style="font-size: 12px;">User: {st.session_state.mongo_user.get('Applicant_full_name').split()[0]}</small>
+                </div>
+            </div>
+            <hr style="margin: 5px 0 20px 0; border: none; border-top: 1px solid #eee;">
+        """, unsafe_allow_html=True)
 
        # --- HERO SECTION (Fixed Name Logic) ---
         full_name = st.session_state.mongo_user.get('Applicant_full_name', '')
@@ -443,21 +445,52 @@ else:
             else:
                 st.session_state.current_app_id = None
                 
-                # --- VISUAL UPGRADE: Progress Bar Container ---
-                with st.status("🚜 AI Agent is processing your claim...", expanded=True) as status:
+                with st.status("🔄 AI Agent Working...", expanded=True) as status:
                     try:
+                        # --- 1. FIX MOBILE AUDIO FORMATS ---
+                        # Convert whatever mobile format (WebM/M4A) to standard WAV
+                        st.write("🎧 Processing Audio...")
+                        audio_bytes = audio_input.read()
+                        
+                        # Create a temporary file to hold the raw upload
+                        temp_in = f"temp_input_{int(time.time())}"
+                        temp_out = f"temp_clean_{int(time.time())}.wav"
+                        
+                        with open(temp_in, "wb") as f:
+                            f.write(audio_bytes)
+                            
+                        # Use FFmpeg directly (Bypasses pydub/Python 3.13 issues)
+                        try:
+                            import subprocess
+                            subprocess.run([
+                                "ffmpeg", 
+                                "-i", temp_in, 
+                                "-ac", "1",       # Force Mono
+                                "-ar", "16000",   # Force 16kHz (Ideal for AI)
+                                temp_out, 
+                                "-y"              # Overwrite
+                            ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                            
+                            # Re-open the clean WAV file for the AI Agent
+                            clean_audio = open(temp_out, "rb")
+                        except Exception as e:
+                            st.warning(f"Audio conversion skipped (using raw): {e}")
+                            # Reset pointer if reading failed
+                            audio_input.seek(0)
+                            clean_audio = audio_input
+                            
+                        # -----------------------------------
+
                         user_mobile = st.session_state.mongo_user.get("mobile_number")
+                        st.write("🤖 AI Agent Analyzing...")
                         
-                        # VISUAL STEP 1: Simulate reading
-                        st.write("🔍 Reading 7/12 Extract & Verifying Owner...")
-                        time.sleep(1) # Tiny pause for effect
+                        # Pass the CLEAN audio to your processor
+                        ai_result = process_claim(clean_audio, land_file, crop_image, user_mobile)
                         
-                        # VISUAL STEP 2
-                        st.write("🎧 Analyzing Voice & Documents...")
-                        
-                        # 1. AI Processing
-                        ai_result = process_claim(audio_input, land_file, crop_image, user_mobile)
-                        
+                        # Cleanup temp files
+                        if os.path.exists(temp_in): os.remove(temp_in)
+                        if os.path.exists(temp_out): os.remove(temp_out)
+
                         if ai_result.get("status") == "success":
                             # VISUAL STEP 3
                             st.write("✅ Verification Complete. Calculating Payout...")
