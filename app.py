@@ -46,14 +46,14 @@ st.markdown("""
     /* LOGIN CARD CONTAINER */
     [data-testid="stVerticalBlockBorderWrapper"] {
         background-color: white;
-        border-radius: 24px; 
-        box-shadow: 0 12px 40px rgba(0,0,0,0.08); 
+        border-radius: 24px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.08);
         border: 1px solid #E0E0E0;
         margin: auto;
-        padding: 3rem 2rem 4rem 2rem;
-        max-width: 420px; 
+        /* FIX: Increased bottom padding to 4rem so the badge doesn't overlap the border */
+        padding: 3rem 2rem 4rem 2rem; 
+        max-width: 420px;
         text-align: center;
-        width: 100%;
     }
 
     /* TYPOGRAPHY */
@@ -153,7 +153,6 @@ st.markdown("""
         
         .govt-badge {
             /* Make text slightly smaller on mobile to look cleaner */
-            display: inline-flex;
             font-size: 11px !important; 
             padding: 8px 12px !important;
             margin-top: 20px !important;
