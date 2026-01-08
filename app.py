@@ -394,14 +394,14 @@ else:
         full_name = st.session_state.mongo_user.get('Applicant_full_name', '')
         
         # Logic: 
-        # 1. If name exists ("Kailas Tajane"), take first word ("Kailas")
+        # 1. If name exists ("Tanmay Tajane"), take first word ("Tanmay")
         # 2. If name is missing/empty, fallback to "Shetkari" (Farmer)
         if full_name and len(str(full_name).strip()) > 0:
             first_name = str(full_name).strip().split()[0]
         else:
             first_name = "Shetkari" # Fallback if name is missing
 
-        st.markdown(f"### 👋 Namaskar, {first_name} Bhau")
+        st.markdown(f"### 👋 Namaskar, {first_name}")
         st.caption("Press the microphone and speak in Marathi")
         # Voice Instructions Box
        # Voice Instructions Box (Updated for Clarity)
