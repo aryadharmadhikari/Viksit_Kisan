@@ -109,20 +109,19 @@ def process_claim(audio_file, land_file, crop_file, mobile_number="9922001122"):
         - Search the "Namuna 7" (Occupant/Bhogvatadar) column for this name.
         - **⛔ EXCLUSION RULE**: If a name is enclosed in **Square Brackets `[...]`** (e.g., `[Name]`), **Parentheses `(...)`**, or has a **Strike-through**, it is a CANCELLED/DELETED entry. **IGNORE IT COMPLETELY.**
         - You must find the **Active Entry** (Name without brackets) for this farmer.
-        - **EXTRACT**: The "Khate Number" (Account No) usually found in the column next to the name (e.g., '330' or '108').
+        - If found, extract that name. If NOT found, use the FIRST name listed in Namuna 7.
+        - **EXTRACT**: The "Khate Kramank" (Account No) usually found in the column before to the name (e.g., '330' or '108').
         
     - **Step B: Extract Location**: Village, Taluka, District, Survey/Gat No.
     
     - **Step C: Extract Exact Area (CRITICAL)**:
-        - Look for the area (Kshetra) specifically associated with the **Active Farmer's Entry**.
-        - Do NOT simply pick the largest number. Pick the number on the **same row/block** as the un-bracketed Name.
+        - Look for the area (Kshetra) specifically associated with the **Target Farmer's Name** or Account Number (Khate No).
+        - Do NOT simply pick the largest number. Pick the number on the **same row/block** as the un-bracketed Farmer's Name.
 
     - **Step D: Locate Crop Info (Namuna 12)**: 
         - Scan the table "गाव नमुना बारा" (Village Form 12).
         - Look for the **LATEST AVAILABLE YEAR** (e.g., 2025-26, 2024-25).
         - Extract the Crop Name & Season.
-        **Scan ALL rows**: A farmer may have multiple crops (e.g., Soybean 0.40 Ha AND Potato 0.20 Ha).
-        - Identify **ALL crops** grown by this specific Khata Number/Farmer in the current season and year.
         - **Area Check**: Use the area found in Namuna 12 (Pikache Kshetra). If it is blank or 0, fallback to the Area found in Step C.
 
     --- 3. VERIFICATION & LOGIC CHECKS ---
@@ -145,13 +144,7 @@ def process_claim(audio_file, land_file, crop_file, mobile_number="9922001122"):
        - **Jowar / Bajra / Wheat: ₹35,000 per Hectare**.
        - Others: ₹40,000 per Hectare.
     
-    **Step B: Calculate Sum Insured (MULTI-CROP SUMMATION)**:
-       - **Rule**: If multiple crops are found in Namuna 12 for the current season:
-         1. Calculate (Area * Rate) for **Crop A**.
-         2. Calculate (Area * Rate) for **Crop B**.
-         3. **SUM THEM UP** for the Total Sum Insured.
-       - *Example*: (Soybean 0.4 Ha * 45k) + (Potato 0.2 Ha * 60k) = 18k + 12k = ₹30,000.
-        - Else: Area (Ha) * Rate.
+    - **Step B: Calculate Sum Insured**: Area (Ha) * Rate.
 
     - **Step C: Calculate Premium (For PDF Field 'c')**:
        - **Rule**:
@@ -189,7 +182,7 @@ def process_claim(audio_file, land_file, crop_file, mobile_number="9922001122"):
             "address_taluka_english": "Taluka in English",
             "address_district": "Extract District",
             "survey_number": "Extract Survey/Gat No",
-            "khate_number": "Extract Khate/Account Number (e.g. 330)",
+            "khate_number": "Extract Khate Kramank/Account Number from Namuna 7 (e.g. 330)",
             "crop_name": "FINAL CROP DECISION (If Verified -> Doc Crop. If Outdated -> Voice Crop)",
             "crop_name_english": "Crop Name in English",
             "sown_area_hectare": "Extract Area from Namuna 12",

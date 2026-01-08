@@ -214,7 +214,7 @@ def generate_best_report(json_data, image_path, output_filename="Claim_Report_FI
     finance_row("Scale of Finance (2025)", rate_text, False)
     
     deduct_text = est.get('deductible_rule', "Standard Scheme Rule")
-    finance_row("Premium Deductible", f"- {deduct_text}", True)
+    finance_row("Applicable Premium Type", f"{deduct_text}", False)
     
     pdf.set_font(main_font, 'B', 12)
     pdf.set_fill_color(255, 250, 225) 
