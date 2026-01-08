@@ -1,8 +1,10 @@
 from fpdf import FPDF
-from datetime import datetime
 import random
 import os
 import re
+from pytz import timezone
+from datetime import datetime
+
 
 # --- IN report_gen.py ---
 
@@ -58,20 +60,21 @@ def generate_best_report(json_data, image_path, output_filename="Claim_Report_FI
     pdf.set_fill_color(248, 248, 248) 
     pdf.set_draw_color(220, 220, 220)
     current_y = pdf.get_y()
-    pdf.rect(10, current_y, 190, 22, 'FD') 
+    pdf.rect(10, current_y, 190, 19, 'FD') 
     
     pdf.set_font('Helvetica', 'B', 9)
     pdf.set_text_color(50, 50, 50)
     
     start_y_text = current_y + 5
     ref_id = f"VK-2025-{random.randint(1000,9999)}"
-    timestamp = datetime.now().strftime("%d-%b-%Y | %H:%M IST")
+    ist = timezone('Asia/Kolkata')
+    now_str = datetime.now(ist).strftime("%d/%m/%Y | %I:%M %p")
     
     pdf.set_xy(15, start_y_text)
     pdf.cell(90, 5, f"Claim Reference ID:  {ref_id}")
     pdf.cell(90, 5, f"Source:  Viksit Kisan AI Agent (v2.0)", ln=True)
     pdf.set_x(15)
-    pdf.cell(90, 5, f"Timestamp:  {timestamp}")
+    pdf.cell(90, 5, f"Timestamp:  {now_str}")
     pdf.cell(90, 5, f"Audit Status:  Logged in Immutable Ledger (MongoDB)", ln=True)
     pdf.ln(8)
 
@@ -124,11 +127,10 @@ def generate_best_report(json_data, image_path, output_filename="Claim_Report_FI
     # --- PRINT ROWS (Updated) ---
     print_row("Filing Applicant", filer_name, badge_text, fill=True) # Shows Login Name
     print_row("Land Owner (7/12)", owner_name, "VERIFIED", fill=False) # Shows 7/12 Name
-    
     print_row("Land ID (Gat No)", form.get('survey_number', 'N/A'), fill=True)
     print_row("Village / Taluka", f"{village_val} / {taluka_val}", fill=False)
     print_row("Total Area", f"{form.get('sown_area_hectare')} Ha", fill=True)
-    
+    print_row("Khate No (Account)", form.get('khate_number', 'N/A'), fill=True)
     pdf.ln(6)
 
     # --- SECTION 3: AI REASONING ---

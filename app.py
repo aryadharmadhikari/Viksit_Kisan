@@ -45,12 +45,13 @@ st.markdown("""
     /* LOGIN CARD CONTAINER */
     [data-testid="stVerticalBlockBorderWrapper"] {
         background-color: white;
-        border-radius: 24px; /* Slightly softer corners */
-        box-shadow: 0 12px 40px rgba(0,0,0,0.08); /* Softer shadow */
+        border-radius: 24px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.08);
         border: 1px solid #E0E0E0;
         margin: auto;
-        padding: 3rem 2rem; /* Adjusted padding to give text room */
-        max-width: 420px; /* Increased slightly to prevent word wrap */
+        /* FIX: Increased bottom padding to 4rem so the badge doesn't overlap the border */
+        padding: 3rem 2rem 4rem 2rem; 
+        max-width: 420px;
         text-align: center;
     }
 
@@ -59,11 +60,11 @@ st.markdown("""
         font-family: 'Segoe UI', Roboto, sans-serif;
         color: #1B5E20;
         font-weight: 800;
-        font-size: 2rem; /* Reduced slightly to fit one line */
-        margin: 15px 0 5px 0; /* Added top margin for icon separation */
+        font-size: 2rem;
+        margin: 15px 0 5px 0;
         text-align: center;
         line-height: 1.2;
-        white-space: nowrap; /* Forces text to stay on one line */
+        white-space: nowrap;
     }
     .login-subtitle {
         font-family: 'Segoe UI', Roboto, sans-serif;
@@ -75,13 +76,15 @@ st.markdown("""
         font-weight: 400;
     }
 
-    /* BUTTON STYLING */
-    div.stButton {
+    /* BUTTON STYLING - Targets BOTH Standard Buttons and Link Buttons */
+    div.stButton, div.stLinkButton {
         display: flex;
         justify-content: center;
         width: 100%; 
     }
-    div.stButton > button {
+    
+    /* Apply Green Theme to both <button> and <a> tags */
+    div.stButton > button, div.stLinkButton > a {
         width: 100% !important;
         height: 52px;
         background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
@@ -92,20 +95,25 @@ st.markdown("""
         border: none;
         box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
         transition: all 0.3s ease;
+        
+        /* Flex properties ensure text is centered in Link Buttons */
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        text-decoration: none;
     }
-    div.stButton > button:hover {
+
+    /* HOVER EFFECT for both */
+    div.stButton > button:hover, div.stLinkButton > a:hover {
         transform: translateY(-2px);
-        /* Lighter, brighter green gradient on hover */
         background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); 
-        /* A subtle green glow border */
         box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4); 
-        border: 1px solid #86EFAC; /* Soft green border */
+        border: 1px solid #86EFAC;
+        color: white !important;
     }
-    div.stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(22, 163, 74, 0.35);
-    }
-    div.stButton > button:active {
+
+    /* ACTIVE EFFECT for both */
+    div.stButton > button:active, div.stLinkButton > a:active {
         transform: translateY(0px);
     }
 
@@ -131,6 +139,22 @@ st.markdown("""
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+            
+    /* --- MOBILE REPAIR PATCH --- */
+    @media only screen and (max-width: 600px) {
+        [data-testid="stVerticalBlockBorderWrapper"] {
+            /* Top: 2rem | Right: 1rem | Bottom: 5rem (Extra space for badge) | Left: 1rem */
+            padding: 2rem 1rem 5rem 1rem !important;
+            max-width: 90% !important; /* Prevents card from touching phone edges */
+        }
+        
+        .govt-badge {
+            /* Make text slightly smaller on mobile to look cleaner */
+            font-size: 11px !important; 
+            padding: 8px 12px !important;
+            margin-top: 20px !important;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -409,54 +433,59 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # --- SUBMIT LOGIC ---
+       # --- SUBMIT LOGIC ---
         if st.button("🚀 Submit Claim (Arj Kara)"):
             if not (audio_input and land_file and crop_image):
                 st.error("⚠️ Please provide Audio, 7/12 Extract, and Crop Photo.")
             else:
                 st.session_state.current_app_id = None
                 
-                with st.status("🔄 AI Agent Working...", expanded=True) as status:
+                # --- VISUAL UPGRADE: Progress Bar Container ---
+                with st.status("🚜 AI Agent is processing your claim...", expanded=True) as status:
                     try:
                         user_mobile = st.session_state.mongo_user.get("mobile_number")
+                        
+                        # VISUAL STEP 1: Simulate reading
+                        st.write("🔍 Reading 7/12 Extract & Verifying Owner...")
+                        time.sleep(1) # Tiny pause for effect
+                        
+                        # VISUAL STEP 2
                         st.write("🎧 Analyzing Voice & Documents...")
                         
                         # 1. AI Processing
                         ai_result = process_claim(audio_input, land_file, crop_image, user_mobile)
                         
                         if ai_result.get("status") == "success":
+                            # VISUAL STEP 3
+                            st.write("✅ Verification Complete. Calculating Payout...")
+                            
                             full_report_data = ai_result.get("full_report_data", {}) 
                             final_data = ai_result.get("data", {})
 
                             # --- FIX: INJECT LOGIC TRACE FOR REPORT ---
-                            # This ensures the "Intelligence Report" has the AI's reasoning text
                             if "reasoning" not in full_report_data:
                                 full_report_data["reasoning"] = ai_result.get("reasoning", "AI verification complete based on provided evidence.")
                             
-                            # Also map it to 'logic_trace' just in case the report generator looks for that key
                             full_report_data["logic_trace"] = full_report_data["reasoning"]
                             # ------------------------------------------
 
-                        # --- ADD THIS BLOCK: INJECT DB USER DETAILS ---
-                            # This ensures the logged-in user's details override AI guesses
+                            # --- ADD THIS BLOCK: INJECT DB USER DETAILS ---
                             db_user = st.session_state.mongo_user
-                    
+                        
                             final_data["mobile_number"] = db_user.get("mobile_number")
                             final_data["email"] = db_user.get("email")
                             final_data["bank_account_number"] = db_user.get("bank_account_number")
                             final_data["bank_name"] = db_user.get("bank_name")
                             # ---------------------------------------------
 
-                            # For Report (report_gen) - Passing the Login Name
+                            # For Report (report_gen)
                             full_report_data["filer_name"] = db_user.get("Applicant_full_name", "")
                             
                             # --- FIX: DATA SYNC START ---
-                            # 1. Force Payout from Report into Final Data
                             est_block = full_report_data.get("claim_estimation", {})
                             payout_val = est_block.get("estimated_payout", "Under Assessment")
                             final_data["estimated_payout"] = payout_val
                             
-                            # 2. Force Voice Response
                             voice_val = full_report_data.get("voice_response") or ai_result.get("voice_response")
                             if not voice_val:
                                 voice_val = "Your claim has been received and verified."
@@ -465,12 +494,12 @@ else:
 
                             app_id = final_data.get("application_id")
                             
-                            # 2. Log to MongoDB (Now using Update/Upsert)
+                            # 2. Log to MongoDB
                             st.write("💾 Logging to Government Ledger...")
                             log_claim_to_db(final_data, ai_result, user_mobile)
                             
                             # 3. Generate PDFs
-                            st.write("📄 Generating Files...")
+                            st.write("📄 Generating Official Documents...")
                             temp_img = f"temp_{user_mobile}.jpg"
                             with open(temp_img, "wb") as f: f.write(crop_image.getvalue())
                             
@@ -484,11 +513,16 @@ else:
                             st.session_state.report_path = r_path
                             st.session_state.form_path = f_path
                             
-                            status.update(label="✅ Claim Processed!", state="complete", expanded=False)
+                            # FINAL SUCCESS STATE (Closes the box neatly)
+                            status.update(label="✅ Claim Processed Successfully!", state="complete", expanded=False)
                             st.balloons()
+                            
                         else:
+                            status.update(label="❌ Claim Failed", state="error", expanded=True)
                             st.error(f"Failed: {ai_result.get('reason')}")
+                            
                     except Exception as e:
+                        status.update(label="❌ System Error", state="error", expanded=True)
                         st.error(f"System Error: {e}")
 
         # --- PERSISTENT BLOCK (READ FROM DB) ---

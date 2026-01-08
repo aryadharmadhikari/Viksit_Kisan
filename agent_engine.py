@@ -109,6 +109,7 @@ def process_claim(audio_file, land_file, crop_file, mobile_number="9922001122"):
         - Search the "Namuna 7" (Occupant/Bhogvatadar) column for this name.
         - **⛔ EXCLUSION RULE**: If a name is enclosed in **Square Brackets `[...]`** (e.g., `[Name]`), **Parentheses `(...)`**, or has a **Strike-through**, it is a CANCELLED/DELETED entry. **IGNORE IT COMPLETELY.**
         - You must find the **Active Entry** (Name without brackets) for this farmer.
+        - **EXTRACT**: The "Khate Number" (Account No) usually found in the column next to the name (e.g., '330' or '108').
         
     - **Step B: Extract Location**: Village, Taluka, District, Survey/Gat No.
     
@@ -188,6 +189,7 @@ def process_claim(audio_file, land_file, crop_file, mobile_number="9922001122"):
             "address_taluka_english": "Taluka in English",
             "address_district": "Extract District",
             "survey_number": "Extract Survey/Gat No",
+            "khate_number": "Extract Khate/Account Number (e.g. 330)",
             "crop_name": "FINAL CROP DECISION (If Verified -> Doc Crop. If Outdated -> Voice Crop)",
             "crop_name_english": "Crop Name in English",
             "sown_area_hectare": "Extract Area from Namuna 12",

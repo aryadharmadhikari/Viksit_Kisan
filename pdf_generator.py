@@ -1,6 +1,7 @@
 from fpdf import FPDF
 from pypdf import PdfReader, PdfWriter
 import os
+from pytz import timezone
 from datetime import datetime
 
 def generate_filled_pdf(json_data, original_pdf_path="assets/template.pdf", output_path="test_output.pdf"):
@@ -159,8 +160,9 @@ def generate_filled_pdf(json_data, original_pdf_path="assets/template.pdf", outp
         
     text_at(108, 607, str(fields.get("date_of_loss", "")))
 
-    # Get current time
-    now_str = datetime.now().strftime("%d/%m/%Y | %I:%M %p")
+    # Fix: Explicitly get time in Indian Standard Time (IST)
+    ist = timezone('Asia/Kolkata')
+    now_str = datetime.now(ist).strftime("%d/%m/%Y | %I:%M %p")
     
     # Print it at the bottom left
     text_at(158, 539, now_str)
