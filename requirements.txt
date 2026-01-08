@@ -15,3 +15,5 @@ requests                  # HTTP Requests
 Authlib                   # For Google OAuth
 google-auth               # Google Auth Utilities
 uharfbuzz                 # CRITICAL: For Marathi Font support in FPDF2
+
+ffmpeg
