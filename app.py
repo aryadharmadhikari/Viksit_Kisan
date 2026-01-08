@@ -118,10 +118,12 @@ st.markdown("""
         transform: translateY(0px);
     }
 
-    /* BADGE */
+    /* BADGE - FIXED CENTERING */
     .govt-badge {
-        display: inline-block;
-        margin-top: 25px;
+        display: flex; /* Changed from inline-block to flex for centering */
+        align-items: center;
+        justify-content: center;
+        margin: 25px auto 0 auto; /* Auto margins center the box itself */
         padding: 8px 16px;
         background-color: #F0FDF4;
         color: #166534;
@@ -130,9 +132,8 @@ st.markdown("""
         font-weight: 600;
         border: 1px solid #DCFCE7;
         letter-spacing: 0.5px;
-        align-items: center;
-        justify-content: center;
         text-align: center;
+        max-width: fit-content; /* Ensures box is only as wide as text */
     }
     
     /* Centering Helper */
@@ -155,6 +156,8 @@ st.markdown("""
             font-size: 11px !important; 
             padding: 8px 12px !important;
             margin-top: 20px !important;
+            /* Allow text to wrap on small screens */
+            white-space: normal !important; 
         }
     }
     </style>
